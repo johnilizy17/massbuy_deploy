@@ -185,14 +185,16 @@ let routes = (app) => {
 
     app.post('/payment/paystack', async (req, res) => {
         try {
-           const responses = verifyToken({authToken:req.header('authorization')})
-            console.log(responses)
-            res.json("payment")
-            // let payment = new Payment(req.body);
-            // payment.status = "pending"
-            // await Package.updateOne({ _id: req.params.id }, { status: "paying" }, { returnOriginal: false });
-            // await payment.save()
-            // return res.json(payment)
+            const responses = verifyToken({ authToken: req.header('authorization') })
+            let payment = new Payment(req.body);
+            if (responses.data.id) {
+                payment.user_id = responses.data.id
+                await Package.updateOne({ _id: payment.package_id }, { status: "confirmed" }, { returnOriginal: false });
+                await payment.save()
+                return res.json(payment)
+            } else {
+                res.status(406).send(responses.data)
+            }
         }
         catch (err) {
             res.status(500).send(err)

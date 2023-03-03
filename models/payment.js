@@ -4,15 +4,18 @@ const PaymentSchema = new mongoose.Schema({
     amount: { type: String, required: true },
     user_id: {
         type: mongoose.Types.ObjectId,
-        ref: "users"
+        ref: "users",
+        required: true
     },
     package_id: {
         type: mongoose.Types.ObjectId,
-        ref: "packages"
+        ref: "packages",
+        required: true
     },
     image: { type: String },
     method: { type: String },
     status: { type: String, default: "confirmed" },
+    referrence: { type: String, required: true }
 },
     {
         toJSON: {
