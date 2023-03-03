@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 const PackageSchema = new mongoose.Schema({
-    status: { type: String, default: "native" },
+    status: { type: String, default: "pending" },
     package_title: { type: String },
-    duration: { type: Number, minValue: 1, maxValue: 12 },
+    duration: { type: Number, minValue: 1, maxValue: 12, required: true },
     category: {
         type: mongoose.Types.ObjectId,
         ref: "categories"

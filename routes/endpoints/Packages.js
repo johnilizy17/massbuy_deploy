@@ -1,6 +1,9 @@
 const Package = require('../../models/packages');
 const { auth } = require("../middlewares/loggedIn");
 const User = require("../../models/user");
+const { tokenCallback } = require('../../functions/token');
+
+const { verifyToken } = tokenCallback()
 
 let routes = (app) => {
     app.post('/package', async (req, res) => {
@@ -21,13 +24,17 @@ let routes = (app) => {
     app.post('/package/user', async (req, res) => {
         try {
             const { total } = req.body;
-            // const user = await User.findOne({ _id: user_id });
-            // if (!user) return res.status(400).json({ msg: "you must to login" })
-            let package = new Package(req.body);
-            package.status = "pending";
-            package.balance = Number(total).toLocaleString();
-            await package.save()
-            res.json(package)
+            const responses = verifyToken({ authToken: req.header('authorization') })
+            if (responses.data.id) {
+
+                let package = new Package(req.body);
+                package.user_id = responses.data.id
+                package.balance = Number(total).toLocaleString();
+                await package.save()
+                res.json(package)
+            } else {
+                res.status(406).send(responses.data)
+            }
         }
         catch (err) {
             res.status(500).send(err.message)

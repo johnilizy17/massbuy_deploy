@@ -1,18 +1,16 @@
 const jwt = require("jsonwebtoken");
-let responses = "djdjd"
+let responses 
 
 function tokenCallback()  {
-    function verifyToken({ authToken }) {
-        const token = authToken.split(' ')
-       
+    const verifyToken=({ authToken }) => {
+        const token = authToken.split(' ')    
         try {
-            responses = jwt.verify(token[1], process.env.ACCESS_TOKEN_SECRET, function (err, decoded) { 
+            jwt.verify(token[1], process.env.ACCESS_TOKEN_SECRET, function (err, decoded) { 
                  if(err){
-                    responses = "token has expired."
+                    responses = {data:"token has expired.", status:500}
                   
                  } else {
-                    responses = "dhdhdh"
-                    
+                    responses = {data: decoded, status:500}
                 }
 
             });
