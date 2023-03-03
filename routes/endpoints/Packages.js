@@ -83,11 +83,29 @@ let routes = (app) => {
         }
     });
 
-    app.get('/package/user/:id', async (req, res) => {
+
+    app.get('/package/user/create', async (req, res) => {
+
+        const responses = verifyToken({ authToken: req.header('authorization') })
+        try {
+            const packages = await Package.findOne( { user_id: responses.data.id });
+            res.json(packages)
+        }
+        catch (err) {
+            res.status(500).send(err)
+        }
+
+    })
+
+
+    app.get('/package/user', async (req, res) => {
+
+        const responses = verifyToken({ authToken: req.header('authorization') })
+
         try {
             let arr = [];
             let duration;
-            let packages = await Package.find({ user_id: req.params.id })
+            let packages = await Package.find({ user_id: responses.data.id })
                 .populate("product_id.item", "itemName price")
             packages.map((e, i) => {
                 duration = e.duration
