@@ -56,6 +56,21 @@ let routes = (app) => {
         }
     });
 
+    // get current package 
+    app.get('/package', async (req, res) => {
+        try {
+
+            let package = await Package.find().sort({ createdAt: -1 })
+                .populate("product_id.item")
+                .populate("category")
+                .populate("user_id", "firstname lastname role")
+            res.json(package[0])
+        }
+        catch (err) {
+            res.status(400).send(err)
+        }
+    });
+
     app.get('/package/:id', async (req, res) => {
         try {
             let packages = await Package.find({ _id: req.params.id })
