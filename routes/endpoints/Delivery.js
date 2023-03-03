@@ -6,6 +6,9 @@ const { verifyToken } = tokenCallback()
 let routes = (app) => {
 
     app.post('/delivery', async (req, res) => {
+        const responses = verifyToken({ authToken: req.header('authorization') })
+        req.body.user_id = responses.data.id
+        
         try {
             let delivery = new Delivery(req.body);
             await delivery.save()
