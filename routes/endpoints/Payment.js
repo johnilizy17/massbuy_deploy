@@ -13,6 +13,7 @@ const storage = multer.diskStorage({
     }
 });
 const fs = require('fs');
+const { tokenCallback } = require('../../functions/token');
 
 const upload = multer({ storage: storage }).single('image');
 cloudinary.config({
@@ -20,6 +21,9 @@ cloudinary.config({
     api_key: 861174487596545,
     api_secret: "6n_1lICquMhRN4YgAMzQlhuG6tY"
 });
+
+
+const { verifyToken } = tokenCallback()
 
 async function uploadToCloudinary(locaFilePath) {
 
@@ -179,6 +183,23 @@ let routes = (app) => {
         }
     });
 
+    app.post('/payment/paystack', async (req, res) => {
+        try {
+           const responses = verifyToken({authToken:req.header('authorization')})
+            console.log(responses)
+            res.json("payment")
+            // let payment = new Payment(req.body);
+            // payment.status = "pending"
+            // await Package.updateOne({ _id: req.params.id }, { status: "paying" }, { returnOriginal: false });
+            // await payment.save()
+            // return res.json(payment)
+        }
+        catch (err) {
+            res.status(500).send(err)
+            throw err
+        }
+    });
+
     app.delete('/payment/:id', async (req, res) => {
         try {
             await Package.deleteOne()
@@ -190,5 +211,7 @@ let routes = (app) => {
     });
 
 };
+
+
 
 module.exports = routes;
