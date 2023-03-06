@@ -10,7 +10,10 @@ const UserSchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: "users"
     }],
-    referalLink: { type: String, default: "" },
+    referalLink: {
+        type: mongoose.Types.ObjectId,
+        ref: "users"
+    },
     order: { type: Number, default: 0 },
     status: { type: String, default: "inactive" },
     role: {

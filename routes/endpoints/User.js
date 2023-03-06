@@ -11,7 +11,11 @@ const storage = multer.diskStorage({
         cb(null, new Date().getMilliseconds() + file.originalname);
     }
 });
+const { tokenCallback } = require('../../functions/token');
 const upload = multer({ storage: storage }).single('image');
+
+
+const { verifyToken } = tokenCallback()
 
 let routes = (app) => {
     app.post("/register", async (req, res) => {
@@ -133,6 +137,21 @@ let routes = (app) => {
     app.get("/users", async (req, res) => {
         try {
             let users = await User.find({ role: "user" }).sort({ firstname: 1 })
+            res.json(users)
+        }
+        catch (err) {
+            res.status(500).send(err)
+        }
+    });
+
+
+    app.get("/users/referral", async (req, res) => {
+
+
+        const responses = verifyToken({ authToken: req.header('authorization') })
+
+        try {
+            let users = await User.find({ referalLink: responses.data.id })
             res.json(users)
         }
         catch (err) {
