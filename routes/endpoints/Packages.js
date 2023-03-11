@@ -41,6 +41,22 @@ let routes = (app) => {
         }
     });
 
+    app.put('/package/update', async (req, res) => {
+        try {
+            const {package_id, ...packageData} = req.body;
+            const responses = verifyToken({ authToken: req.header('authorization') })
+            if (responses.data.id) {
+                const packages = await Package.updateOne({ _id: package_id }, packageData)
+                res.json(packageData)
+            } else {
+                res.status(406).send(responses.data)
+            }
+        }
+        catch (err) {
+            res.status(500).send(err.message)
+        }
+    });
+
     // get all packages
     app.get('/packages', async (req, res) => {
         try {
@@ -84,12 +100,17 @@ let routes = (app) => {
     });
 
 
-    app.get('/package/user/create', async (req, res) => {
+    app.get('/package/user/current', async (req, res) => {
 
         const responses = verifyToken({ authToken: req.header('authorization') })
         try {
-            const packages = await Package.findOne( { user_id: responses.data.id });
-            res.json(packages)
+            const packages = await Package.find( { user_id: responses.data.id }).populate({
+                path: "product_id", // populate blogs
+                populate: {
+                   path: "item" // in blogs, populate comments
+                }
+             });
+            res.json(packages[packages.length - 1])
         }
         catch (err) {
             res.status(500).send(err)

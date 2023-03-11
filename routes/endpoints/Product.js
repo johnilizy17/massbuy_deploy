@@ -128,6 +128,20 @@ let routes = (app) => {
         }
     });
 
+    // search for all product
+    app.post('/products/search', async (req, res) => {
+        try {
+            let products = await Product.find({
+                "$text": {
+                    "$search": req.body.query
+                }
+            });
+            res.json(products)
+        }
+        catch (err) {
+            res.status(400).send(err)
+        }
+    });
     // get latest 8 products
     app.get('/product-8', async (req, res) => {
         try {
