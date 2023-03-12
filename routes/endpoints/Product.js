@@ -129,13 +129,17 @@ let routes = (app) => {
     });
 
     // search for all product
-    app.post('/products/search', async (req, res) => {
+    app.get('/products/search', async (req, res) => {
+
+        const page = parseInt(req.query.page) - 1 || 0;
+		const limit = parseInt(req.query.limit) || 5;
+		const search = req.query.search || "";
+		let sort = req.query.sort || "rating";
+		let genre = req.query.genre || "All";
+        
         try {
-            let products = await Product.find({
-                "$text": {
-                    "$search": req.body.query
-                }
-            });
+            let products = await Product.find(({ itemName: { $regex: search, $options: "i" } }))
+ 
             res.json(products)
         }
         catch (err) {
