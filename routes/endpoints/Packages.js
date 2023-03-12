@@ -119,7 +119,27 @@ let routes = (app) => {
     })
 
 
-    app.get('/package/user', async (req, res) => {
+    app.get('/package/user/single', async (req, res) => {
+
+        const responses = verifyToken({ authToken: req.header('authorization') })
+      
+        try {
+            const packages = await Package.find( { _id: req.query.package_id  }).populate({
+                path: "product_id", // populate blogs
+                populate: {
+                   path: "item" // in blogs, populate comments
+                }
+             });
+            res.json(packages)
+        }
+        catch (err) {
+            res.status(500).send(err)
+        }
+
+    })
+
+
+    app.get('/package/user/all', async (req, res) => {
 
         const responses = verifyToken({ authToken: req.header('authorization') })
 
