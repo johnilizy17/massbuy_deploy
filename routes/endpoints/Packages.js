@@ -128,6 +128,7 @@ let routes = (app) => {
                 path: "product_id", // populate blogs
                 populate: {
                    path: "item" // in blogs, populate comments
+                   // all item will be populated when reqested
                 }
              });
             res.json(packages)
