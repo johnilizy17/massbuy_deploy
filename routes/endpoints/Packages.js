@@ -129,7 +129,10 @@ let routes = (app) => {
             const packages = await Package.find( { user_id: responses.data.id, status: { $regex: status, $options: "i" } }).limit(limit).skip(page).populate({
                 path: "product_id", // populate blogs
                 populate: {
-                   path: "item" // in blogs, populate comments
+                   path: "item", // in blogs, populate comments
+                   populate: {
+                   path:"category_id"
+                }
                 }
              });
             res.json(packages)
