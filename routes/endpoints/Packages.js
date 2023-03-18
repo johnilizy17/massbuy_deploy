@@ -126,7 +126,7 @@ let routes = (app) => {
 		const status = req.query.status || "";
        
         try {
-            const packages = await Package.find( { user_id: responses.data.id, status: { $regex: status, $options: "i" } }).limit(limit).skip(page).populate({
+            const packages = await Package.find( { user_id: responses.data.id, status: { $regex: status, $options: "i" } }).sort({ createdAt: -1 }).limit(limit).skip(page).populate({
                 path: "product_id", // populate blogs
                 populate: {
                    path: "item", // in blogs, populate comments
