@@ -121,8 +121,12 @@ let routes = (app) => {
  app.get('/package/user/allPackage', async (req, res) => {
 
         const responses = verifyToken({ authToken: req.header('authorization') })
+        const page = parseInt(req.query.page) - 1 || 0;
+		const limit = parseInt(req.query.limit) || 6;
+		const status = req.query.status || "";
+       
         try {
-            const packages = await Package.find( { user_id: responses.data.id }).populate({
+            const packages = await Package.find( { user_id: responses.data.id, status: { $regex: status, $options: "i" } }).limit(limit).skip(page).populate({
                 path: "product_id", // populate blogs
                 populate: {
                    path: "item" // in blogs, populate comments
