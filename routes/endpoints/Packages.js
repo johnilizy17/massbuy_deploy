@@ -130,12 +130,13 @@ let routes = (app) => {
                 path: "product_id", // populate blogs
                 populate: {
                    path: "item", // in blogs, populate comments
-                path: "category",
                    populate: {
                    path:"category_id"
                 }
                 }
-             });
+             }).populate(
+                "category"
+              );
             res.json(packages)
         }
         catch (err) {
