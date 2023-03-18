@@ -107,9 +107,14 @@ let routes = (app) => {
             const packages = await Package.find( { user_id: responses.data.id }).populate({
                 path: "product_id", // populate blogs
                 populate: {
-                   path: "item" // in blogs, populate comments
+                   path: "item", // in blogs, populate comments
+                   populate: {
+                   path:"category_id"
                 }
-             });
+                }
+             }).populate(
+                "category"
+              );
             res.json(packages[packages.length - 1])
         }
         catch (err) {
