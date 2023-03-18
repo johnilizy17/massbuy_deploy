@@ -1,5 +1,7 @@
 const Package = require('../../models/packages');
 const Payment = require("../../models/payment");
+const Transaction = require("../../models/transaction");
+const Wallet = require("../../models/wallet");
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 
@@ -26,7 +28,6 @@ cloudinary.config({
 const { verifyToken } = tokenCallback()
 
 async function uploadToCloudinary(locaFilePath) {
-
     var mainFolderName = "massbuy"
     var filePathOnCloudinary = mainFolderName + "/" + locaFilePath;
     return cloudinary.uploader.upload(locaFilePath)
@@ -41,6 +42,36 @@ async function uploadToCloudinary(locaFilePath) {
             return { message: "Fail", };
         });
 };
+
+async function  createTranaction(data) {
+    try {
+       const createNewTransaction = await Transaction(data);
+        await createNewTransaction.save()
+        return createNewTransaction
+    }
+    catch (err) {
+        
+        throw err
+    }
+};
+
+async function  createWallet(data) {
+    try {
+       const createNewWallet = await Wallet(data);
+        await createNewWallet.save()
+        return createNewWallet
+    }
+    catch (err) {
+        
+        throw err
+    }
+};
+
+
+
+
+
+
 
 let routes = (app) => {
     // upload file for payment made
@@ -191,6 +222,8 @@ let routes = (app) => {
                 payment.user_id = responses.data.id
                 await Package.updateOne({ _id: payment.package_id }, { status: "confirmed" }, { returnOriginal: false });
                 await payment.save()
+                const {referrence, amount, transaction_title} = req.body
+                createTranaction({user_id:responses.data.id, referrence, amount, transaction_title  })
                 return res.json(payment)
             } else {
                 res.status(406).send(responses.data)
@@ -201,7 +234,7 @@ let routes = (app) => {
             throw err
         }
     });
-
+    
     app.delete('/payment/:id', async (req, res) => {
         try {
             await Package.deleteOne()
@@ -211,8 +244,73 @@ let routes = (app) => {
             res.status(500).send(err)
         }
     });
+   
+    app.get('/wallet', async (req, res) => {
+        const responses = verifyToken({ authToken: req.header('authorization') })
+           
+        try {
+            let wallet = await Wallet.find({ user_id: responses.data.id})
+              if(wallet.length === 0){
+               wallet = await createWallet({user_id:responses.data.id, amount:0 })
+              }else {
+              }
+            res.json(wallet)
+        }
+        catch (err) {
+            res.status(500).send(err)
+        }
+    });
+    app.post('/wallet/addfund/flutterwave', async (req, res) => {
+        const responses = verifyToken({ authToken: req.header('authorization') })
+           
+        try {
+          const walletData  = await Wallet.find({ user_id: responses.data.id})
+           
+              if(walletData.length === 0){
+            res.status(402).send("invalid account")
+              }else {
+                let wallet 
+               wallet = await Wallet.updateOne({ _id: walletData[0]._id }, {amount:req.body.amount+walletData[0].amount}, { returnOriginal: false }) 
+               const {referrence, amount, transaction_title} = req.body
+              const transaction = await  createTranaction({user_id:responses.data.id, referrence, amount, transaction_title  })
+                res.json(transaction)
+            }
+           
+        }
+        catch (err) {
+            console.log(err)
+            res.status(500).send(err)
+        }
+    });
+    app.delete('/wallet/delete', async (req, res) => {
+        const responses = verifyToken({ authToken: req.header('authorization') })
+           
+        try {
+            let wallet = await Wallet.deleteOne({ user_id: responses.data.id})
+              
+            res.json(wallet)
+        }
+        catch (err) {
+            res.status(500).send(err)
+        }
+    });
 
+    app.get('/transactions', async (req, res) => {
+        const responses = verifyToken({ authToken: req.header('authorization') })
+           
+        try {
+            let transactions = await Transaction.find({ user_id: responses.data.id})
+              
+            res.json(transactions)
+        }
+        catch (err) {
+            res.status(500).send(err)
+        }
+    });
+   
 };
+
+
 
 
 
