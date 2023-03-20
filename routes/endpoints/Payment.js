@@ -1,5 +1,6 @@
 const Package = require('../../models/packages');
 const Payment = require("../../models/payment");
+const Payout = require("../../models/payout");
 const Transaction = require("../../models/transaction");
 const Wallet = require("../../models/wallet");
 const multer = require('multer');
@@ -282,6 +283,32 @@ let routes = (app) => {
             res.status(500).send(err)
         }
     });
+   
+    app.post('/wallet/payout', async (req, res) => {
+        const responses = verifyToken({ authToken: req.header('authorization') })
+
+        try {
+            const walletData = await Wallet.find({ user_id: responses.data.id })
+            const {  amount, transaction_title, type } = req.body
+
+            if (walletData.length === 0) {
+                res.status(402).send("invalid account")
+            } else {
+                const createPayout = await Payout({user_id:responses.data.id, amount, type});
+                await createPayout.save()
+                
+                const transaction = await createTranaction({ user_id: responses.data.id, referrence:createPayout._id, amount, transaction_title })
+               
+                res.json(transaction)
+            }
+
+        }
+        catch (err) {
+            console.log(err)
+            res.status(500).send(err)
+        }
+    });
+   
     app.delete('/wallet/delete', async (req, res) => {
         const responses = verifyToken({ authToken: req.header('authorization') })
 
