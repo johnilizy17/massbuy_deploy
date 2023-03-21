@@ -11,7 +11,6 @@ const { uploadFile, getFileStream } = require('../../functions/S3')
 
 async   function ImageUpload(file) {
         const result = await uploadFile(file)
-        await unlinkFile(file.path)
         return result.Location
       }
 
