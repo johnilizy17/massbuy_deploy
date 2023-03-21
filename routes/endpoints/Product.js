@@ -9,70 +9,40 @@ const upload = multer({ dest: 'uploads/' })
 
 const { uploadFile, getFileStream } = require('../../functions/S3')
 
+async   function ImageUpload(file) {
+        const result = await uploadFile(file)
+        await unlinkFile(file.path)
+        return result.Location
+      }
+
+
 let routes = (app) => {
-    // app.post('/product', async (req, res) => {
-    //     upload(req, res, async (err) => {
 
-    //         if (err) {
-    //             console.log(err)
-    //             return res.json({ msg: "File Missing " })
-    //         } else if (req.file === undefined) {
-    //             return res.status(500).json({ msg: "File Missing " })
-    //         } else {
-    //             if (req.file) {
-    //                 var locaFilePath = req.file.path
-    //                 var result = await uploadToCloudinary(locaFilePath);
-    //                 req.body.image = [result.url][0];
-    //                 try {
-    //                     const { itemName, price, image, details, spec, feature,
-    //                         user_id, category_id } = req.body;
-    //                     if (!user_id)
-    //                         return res.status(500).json({ msg: "Please Login In" })
-    //                     if (!itemName || !price)
-    //                         return res.status(500).json({ msg: "Please fill in Product Name and Price at least!" })
-    //                     if (!image)
-    //                         return res.status(500).json({ msg: "Please Upload Product Image" })
-    //                     const newProduct = {
-    //                         itemName, price: Number(price).toLocaleString(), image, details, spec, feature,
-    //                         user_id, category_id
-    //                     };
-    //                     let newProduct_ = new Product(newProduct);
-    //                     await newProduct_.save()
-    //                     return res.status(200).json({ msg: "Product Successfully Created" })
-    //                     // return res.status(200).json(newProduct_)
+    //   get image by server
+    //   app.get('/images/:key', (req, res) => {
+    //     console.log(req.params)
+    //     const key = req.params.key
+    //     const readStream = getFileStream(key)
+      
+    //     readStream.pipe(res)
+    //   })
 
-    //                 }
-    //                 catch (err) {
-    //                     console.log('there')
-    //                     return res.status(500).send(err);
-    //                 }
-    //             }
-    //         }
-    //     });
-    // });
-
-    app.post('/images', upload.single('image'), async (req, res) => {
+    app.post('/product', upload.single('image'), async (req, res) => {
+    
         const file = req.file
-        console.log(file)
-      
-        // apply filter
-        // resize 
-      
-        // const result = await uploadFile(file)
-        // await unlinkFile(file.path)
-        // console.log(result)
-        // const description = req.body.description
-        res.send({imagePath: `/images/${file}`})
-      })
-
-    app.post('/product', async (req, res) => {
+    
+       const imageLink = await ImageUpload(file)
+       if(imageLink){
         try {
-            let product = new Product(req.body);
+            let product = new Product({...req.body, image:imageLink});
             await product.save()
             res.json(product)
         }
         catch (err) {
+            console.log(err)
             res.status(500).send(err)
+        }}else {
+            res.status(305).send("image filed to upload")
         }
     });
 

@@ -7,6 +7,7 @@ function tokenCallback()  {
         try {
             jwt.verify(token[1], process.env.ACCESS_TOKEN_SECRET, function (err, decoded) { 
                  if(err){
+                    throw err
                     responses = {data:"token has expired.", status:500}
                   
                  } else {

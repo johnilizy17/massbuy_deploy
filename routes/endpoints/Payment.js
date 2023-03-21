@@ -261,6 +261,36 @@ let routes = (app) => {
             res.status(500).send(err)
         }
     });
+
+    app.post('/payment/package/history', async (req, res) => {
+        const responses = verifyToken({ authToken: req.header('authorization') })
+        const package = req.query.package;
+
+        try {
+            let payment = await Payment.find({ user_id: responses.data.id, package_id: package })
+
+            res.json(payment)
+        }
+        catch (err) {
+            console.log(err)
+            res.status(500).send(err)
+        }
+    });
+
+    app.get('/payment/summary/:id', async (req, res) => {
+        const responses = verifyToken({ authToken: req.header('authorization') })
+        const package = req.params.id;
+
+        try {
+            let payment = await Payment.find({ user_id: responses.data.id, package_id: package })
+            res.json(payment)
+        }
+        catch (err) {
+            console.log(err)
+            res.status(500).send(err)
+        }
+    });
+
     app.post('/wallet/addfund/flutterwave', async (req, res) => {
         const responses = verifyToken({ authToken: req.header('authorization') })
 
@@ -283,22 +313,22 @@ let routes = (app) => {
             res.status(500).send(err)
         }
     });
-   
+
     app.post('/wallet/payout', async (req, res) => {
         const responses = verifyToken({ authToken: req.header('authorization') })
 
         try {
             const walletData = await Wallet.find({ user_id: responses.data.id })
-            const {  amount, transaction_title, type } = req.body
+            const { amount, transaction_title, type } = req.body
 
             if (walletData.length === 0) {
                 res.status(402).send("invalid account")
             } else {
-                const createPayout = await Payout({user_id:responses.data.id, amount, type});
+                const createPayout = await Payout({ user_id: responses.data.id, amount, type });
                 await createPayout.save()
-                
-                const transaction = await createTranaction({ user_id: responses.data.id, referrence:createPayout._id, amount, transaction_title })
-               
+
+                const transaction = await createTranaction({ user_id: responses.data.id, referrence: createPayout._id, amount, transaction_title })
+
                 res.json(transaction)
             }
 
@@ -308,7 +338,7 @@ let routes = (app) => {
             res.status(500).send(err)
         }
     });
-   
+
     app.delete('/wallet/delete', async (req, res) => {
         const responses = verifyToken({ authToken: req.header('authorization') })
 
@@ -341,23 +371,23 @@ let routes = (app) => {
             const responses = verifyToken({ authToken: req.header('authorization') })
 
             if (responses.data.id) {
-                const walletCharges = await Wallet.findOne({user_id:responses.data.id})
+                const walletCharges = await Wallet.findOne({ user_id: responses.data.id })
 
-                
+
 
                 const { amount, transaction_title, package_id } = req.body
 
-                if(walletCharges.amount >= amount){
-                await Wallet.updateOne({ _id: walletCharges._id}, { amount: walletCharges.amount-amount }, { returnOriginal: false });
-               
-               const transaction = await createTranaction({ user_id: responses.data.id, referrence:walletCharges._id, amount, transaction_title })
+                if (walletCharges.amount >= amount) {
+                    await Wallet.updateOne({ _id: walletCharges._id }, { amount: walletCharges.amount - amount }, { returnOriginal: false });
 
-                await Package.updateOne({ _id: package_id}, { status: "confirmed" }, { returnOriginal: false });
-               
-                let payment = new Payment({amount,package_id, user_id:responses.data.id, referrence: transaction._id });
-                await payment.save()
-                return res.json(payment)
-            } else {
+                    const transaction = await createTranaction({ user_id: responses.data.id, referrence: walletCharges._id, amount, transaction_title })
+
+                    await Package.updateOne({ _id: package_id }, { status: "confirmed" }, { returnOriginal: false });
+
+                    let payment = new Payment({ amount, package_id, user_id: responses.data.id, referrence: transaction._id });
+                    await payment.save()
+                    return res.json(payment)
+                } else {
                     res.status(307).send("insufficient fund in your wallet")
                 }
             } else {
