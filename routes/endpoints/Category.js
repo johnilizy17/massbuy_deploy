@@ -5,6 +5,9 @@ const fs = require('fs')
 const util = require('util')
 const unlinkFile = util.promisify(fs.unlink)
 const upload = multer({ dest: 'uploads/' })
+const { tokenCallback } = require('../../functions/token');
+
+const { verifyToken } = tokenCallback()
 
 
 const { uploadFile, getFileStream } = require('../../functions/S3')
