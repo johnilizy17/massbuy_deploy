@@ -60,8 +60,12 @@ let routes = (app) => {
 
     // get all products
     app.get('/products', async (req, res) => {
+        const page = parseInt(req.query.page) - 1 || 0;
+		const limit = parseInt(req.query.limit) || 50;
+		const search = req.query.search || "";
+        
         try {
-            let products = await Product.find({ status: "active" }).sort({ createdAt: -1 })
+            let products = await Product.find(({ itemName: { $regex: search, $options: "i" } })).limit(limit).sort({ createdAt: -1 })
                 .populate("user_id", "firstname lastname role")
                 .populate("category_id", "title")
             res.json(products)
