@@ -182,7 +182,7 @@ let routes = (app) => {
         }
     });
 
-    app.get("/user/:id", async (req, res) => {
+    app.get("/user/profile", async (req, res) => {
         const responses = verifyToken({ authToken: req.header('authorization') })
 
         try {
