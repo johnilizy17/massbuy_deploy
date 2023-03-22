@@ -183,8 +183,10 @@ let routes = (app) => {
     });
 
     app.get("/user/:id", async (req, res) => {
+        const responses = verifyToken({ authToken: req.header('authorization') })
+
         try {
-            let user = await User.findOne({ _id: req.params.id })
+            let user = await User.findOne({ _id: responses.data.id })
                 .populate("referrals", "firstname lastname email")
             res.json(user)
         }
