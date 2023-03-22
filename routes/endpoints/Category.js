@@ -52,12 +52,16 @@ let routes = (app) => {
     });
 
     app.delete('/category/:id', async (req, res) => {
+        const responses = verifyToken({ authToken: req.header('authorization') })
+        if(responses.data.id){
         try {
             await Category.deleteOne({ _id: req.params.id })
             res.json({ msg: "Category Deleted" })
         }
         catch (err) {
             res.status(500).send(err)
+        }}else {
+            res.status(304).send("token expired")
         }
     });
 
