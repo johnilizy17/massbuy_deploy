@@ -20,11 +20,12 @@ let routes = (app) => {
     app.post('/category',upload.single('image'), async (req, res) => {
 
         const file = req.file
-    
+        const responses = verifyToken({ authToken: req.header('authorization') })
+        
         const imageLink = await ImageUpload(file)
    if(imageLink){ 
         try {
-            let category = new Category({...req.body, image:imageLink});
+            let category = new Category({...req.body, image:imageLink, createdBy:responses.data.id});
             await category.save()
             res.json(category)
         }
@@ -34,9 +35,12 @@ let routes = (app) => {
     });
 
     app.get('/category', async (req, res) => {
+        const page = parseInt(req.query.page) - 1 || 0;
+		const limit = parseInt(req.query.limit) || 15;
+		const search = req.query.search || "";
+       
         try {
-            let category = await Category.find()
-                .populate("createdBy", "firstname lastname role")
+            let category = await Category.find().sort({ createdAt: -1 }).limit(limit).skip(page).populate("createdBy", "firstname lastname role")
             res.json(category)
         }
         catch (err) {
